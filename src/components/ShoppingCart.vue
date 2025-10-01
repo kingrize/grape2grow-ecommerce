@@ -29,6 +29,10 @@ export default {
     handleCloseCart() {
       this.$emit('close-cart');
     },
+    // Method baru untuk mengirim sinyal hapus semua
+    handleClearCart() {
+      this.$emit('clear-cart');
+    },
     checkout() {
       if (this.cartItems.length === 0) return;
       const phoneNumber = '6285175280710';
@@ -49,18 +53,20 @@ export default {
 
 <template>
   <div class="cart-panel">
-    <!-- BAGIAN HEADER (TETAP DI ATAS) -->
     <div class="cart-header">
       <h3 class="cart-title">
         <vue-feather type="shopping-cart"></vue-feather>
         Keranjang Saya
       </h3>
+      <!-- Tombol Hapus Semua -->
+      <button v-if="cartItems.length > 0" @click="handleClearCart" class="clear-cart-btn">
+        Hapus Semua
+      </button>
       <button @click="handleCloseCart" class="close-btn" aria-label="Tutup Keranjang">
         <vue-feather type="x"></vue-feather>
       </button>
     </div>
     
-    <!-- BAGIAN KONTEN (HANYA INI YANG BISA SCROLL) -->
     <div class="cart-body">
       <div v-if="cartItems.length === 0" class="cart-empty">
         <vue-feather type="slash" size="48" class="empty-icon"></vue-feather>
@@ -83,7 +89,6 @@ export default {
       </div>
     </div>
     
-    <!-- BAGIAN FOOTER (TETAP DI BAWAH) -->
     <div v-if="cartItems.length > 0" class="cart-footer">
       <div class="total">
         <span>Total Harga</span>
@@ -99,26 +104,18 @@ export default {
 
 <style scoped>
 /* src/components/ShoppingCart.vue */
-
-/* --- PERUBAHAN UTAMA UNTUK LAYOUT & UX --- */
 .cart-panel {
   position: fixed;
   top: 0;
   right: 0;
-  height: 100vh; /* Memastikan tinggi selalu 100% dari layar */
-
-  /* Lebar Adaptif */
-  width: 90vw; /* Lebar default untuk mobile */
-  max-width: 380px; /* Lebar maksimal untuk layar lebih besar */
-
+  height: 100%; /* Menggunakan 100% untuk kompatibilitas mobile yang lebih baik */
+  width: 90vw;
+  max-width: 380px;
   background-color: white;
   box-shadow: -4px 0 15px rgba(0,0,0,0.1);
   z-index: 1000;
-
-  /* KUNCI UTAMA: Menggunakan Flexbox untuk layout yang benar */
   display: flex;
-  flex-direction: column; /* Mengatur item secara vertikal */
-
+  flex-direction: column;
   transform: translateX(100%);
   transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -129,35 +126,19 @@ export default {
 .cart-header {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #eee;
-  flex-shrink: 0; /* Mencegah header menyusut */
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-
-.cart-body {
-  flex-grow: 1; /* Membuat bagian ini mengisi semua sisa ruang */
-  overflow-y: auto; /* HANYA bagian ini yang akan memiliki scrollbar jika perlu */
-  padding: 1rem;
-}
-
-.cart-footer {
-  padding: 1.5rem;
-  border-top: 1px solid #eee;
-  background: #fdfdfd;
-  flex-shrink: 0; /* Mencegah footer menyusut */
-}
-/* --- AKHIR PERUBAHAN UTAMA --- */
-
-
 .cart-title {
   font-size: 1.2rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-right: auto; /* Mendorong tombol lain ke kanan */
 }
-
 .close-btn {
   background: none;
   border: none;
@@ -167,6 +148,32 @@ export default {
 }
 .close-btn:hover {
   color: #333;
+}
+
+.clear-cart-btn {
+  background: none;
+  border: none;
+  color: #e63946;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 5px;
+  margin-right: 10px;
+}
+
+.cart-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.cart-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #eee;
+  background: #fdfdfd;
+  flex-shrink: 0;
+  /* KUNCI PERBAIKAN: Menambahkan padding di bawah untuk memberi ruang dari navigasi browser */
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
 }
 
 .cart-empty {

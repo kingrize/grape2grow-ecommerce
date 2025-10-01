@@ -1,11 +1,11 @@
 <!-- src/App.vue -->
 <script>
-// Impor data dan semua komponen yang dibutuhkan
 import productsData from './data/products.js';
 import Header from './components/Header.vue';
 import ProductCard from './components/ProductCard.vue';
 import Footer from './components/Footer.vue';
 import ShoppingCart from './components/ShoppingCart.vue';
+import DeveloperTool from './components/DeveloperTool.vue';
 
 export default {
   name: 'App',
@@ -13,21 +13,27 @@ export default {
     Header,
     ProductCard,
     Footer,
-    ShoppingCart
+    ShoppingCart,
+    DeveloperTool
   },
   data() {
     return {
       products: productsData,
       cart: [],
       isCartOpen: false,
-      // Properti baru untuk memicu animasi di Header
-      cartAnimationTrigger: 0
+      cartAnimationTrigger: 0,
+      showDevTools: false
     };
   },
   computed: {
-    // Menghitung total item untuk badge di header
     totalCartItems() {
       return this.cart.reduce((total, item) => total + item.quantity, 0);
+    }
+  },
+  mounted() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('dev') === 'true') {
+      this.showDevTools = true;
     }
   },
   watch: {
@@ -40,7 +46,6 @@ export default {
     }
   },
   methods: {
-    // Fungsi untuk menangani event 'add-to-cart'
     handleAddToCart(product) {
       const existingItem = this.cart.find(item => item.id === product.id);
       if (existingItem) {
@@ -50,23 +55,21 @@ export default {
       } else {
         this.cart.push({ ...product, quantity: 1 });
       }
-      
-      // PERUBAHAN: Tidak lagi membuka keranjang, tapi memicu animasi
-      // this.isCartOpen = true; // Baris ini dihapus
-      this.cartAnimationTrigger++; // Baris ini ditambahkan
+      this.cartAnimationTrigger++;
     },
-    
     handleUpdateQuantity(product, newQuantity) {
       const itemInCart = this.cart.find(item => item.id === product.id);
       if (itemInCart && newQuantity <= itemInCart.stock) {
         itemInCart.quantity = newQuantity;
       }
     },
-    
     handleRemoveItem(product) {
       this.cart = this.cart.filter(item => item.id !== product.id);
     },
-
+    // Method baru untuk mengosongkan keranjang
+    handleClearCart() {
+      this.cart = [];
+    },
     toggleCart() {
       this.isCartOpen = !this.isCartOpen;
     }
@@ -76,7 +79,6 @@ export default {
 
 <template>
   <div id="app-wrapper">
-    <!-- Mengirim prop 'trigger' baru ke Header -->
     <Header 
       :cartItemCount="totalCartItems"
       :trigger="cartAnimationTrigger"
@@ -85,6 +87,9 @@ export default {
     <main class="container">
       <h2 class="section-title">Produk Bibit Anggur Pilihan</h2>
       <p class="section-subtitle">Kualitas terbaik untuk kebun Anda. Tambahkan ke keranjang sekarang!</p>
+      
+      <DeveloperTool v-if="showDevTools" />
+      
       <div class="product-grid">
         <ProductCard
           v-for="product in products"
@@ -95,21 +100,19 @@ export default {
       </div>
     </main>
     <Footer />
-    
     <ShoppingCart 
       :cartItems="cart" 
       :class="{ 'is-open': isCartOpen }"
       @update-quantity="handleUpdateQuantity"
       @remove-item="handleRemoveItem"
+      @clear-cart="handleClearCart"
       @close-cart="toggleCart"
     />
-    
     <div v-if="isCartOpen" @click="toggleCart" class="cart-overlay"></div>
   </div>
 </template>
 
 <style>
-/* Sebaiknya, pindahkan style ini ke file src/style.css Anda */
 .no-scroll {
   overflow: hidden;
 }
