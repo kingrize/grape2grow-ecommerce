@@ -110,11 +110,12 @@ export default {
         <div class="code-container">
           <pre><code>{{ generatedCode }}</code></pre>
           <button @click="copyCode" class="copy-btn">
+            <!-- PERBAIKAN DI SINI -->
             <span v-if="!copySuccess" class="copy-btn-content">
-              <vue_feather type="copy" size="16"></vue_feather> Salin Kode
+              <vue-feather type="copy" size="16"></vue-feather> Salin Kode
             </span>
             <span v-else class="copy-btn-content">
-              <vue_feather type="check" size="16"></vue_feather> Berhasil!
+              <vue-feather type="check" size="16"></vue-feather> Berhasil!
             </span>
           </button>
         </div>
