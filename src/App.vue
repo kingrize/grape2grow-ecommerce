@@ -1,5 +1,6 @@
 <!-- src/App.vue -->
 <script>
+// ... (script Anda tidak berubah, biarkan seperti semula) ...
 import productsData from './data/products.js';
 import Header from './components/Header.vue';
 import ProductCard from './components/ProductCard.vue';
@@ -13,12 +14,10 @@ import FilterSort from './components/FilterSort.vue';
 import AboutPage from './components/AboutPage.vue';
 import ContactPage from './components/ContactPage.vue';
 import NotFoundPage from './components/NotFoundPage.vue';
-// 1. Impor komponen menu mobile
 import MobileNav from './components/MobileNav.vue';
 
 export default {
   name: 'App',
-  // 2. Daftarkan komponen
   components: {
     Header,
     ProductCard,
@@ -46,7 +45,6 @@ export default {
       searchQuery: '',
       toasts: [],
       sortBy: 'default',
-      // 3. State baru untuk menu mobile
       isMobileNavOpen: false
     };
   },
@@ -55,7 +53,6 @@ export default {
       return this.cart.reduce((total, item) => total + item.quantity, 0);
     },
     filteredProducts() {
-      // ... (logika computed ini tidak berubah) ...
       let processedProducts = [...this.products];
       if (this.searchQuery) {
         const query = this.searchQuery.toLowerCase();
@@ -83,7 +80,6 @@ export default {
       }
       return processedProducts;
     },
-    // 4. Computed property untuk mencegah scroll jika ada overlay
     isOverlayActive() {
       return this.isCartOpen || this.isMobileNavOpen;
     }
@@ -98,7 +94,6 @@ export default {
     }
   },
   watch: {
-    // 5. Watcher yang lebih efisien
     isOverlayActive(isActive) {
       document.body.classList.toggle('no-scroll', isActive);
     },
@@ -114,7 +109,6 @@ export default {
     this.showDevTools = urlParams.get('dev') === 'true';
   },
   methods: {
-    // 6. Method baru untuk toggle menu mobile
     toggleMobileNav() {
       this.isMobileNavOpen = !this.isMobileNavOpen;
     },
@@ -174,16 +168,28 @@ export default {
       @toggle-mobile-nav="toggleMobileNav"
     />
     <main class="container">
-      <!-- ... (Logika v-if tidak berubah) ... -->
       <div v-if="currentView === 'home'">
-        <h2 class="section-title">Produk Bibit Anggur Pilihan</h2>
-        <p class="section-subtitle">Kualitas terbaik untuk kebun Anda. Tambahkan ke keranjang sekarang!</p>
+        
+        <!-- BAGIAN HERO SECTION BARU -->
+        <div class="hero-section">
+          <div class="hero-content">
+            <h1>Wujudkan Kebun Anggur Impian Anda</h1>
+            <p>Koleksi bibit anggur impor dan lokal kualitas premium untuk hasil panen terbaik.</p>
+            <a href="#product-list" class="cta-button">Lihat Koleksi</a>
+          </div>
+        </div>
+
+        <h2 class="section-title">Produk Pilihan Kami</h2>
+        
         <div class="search-and-filter-bar">
           <SearchBar v-model="searchQuery" />
           <FilterSort v-model="sortBy" />
         </div>
+
         <DeveloperTool v-if="showDevTools" />
-        <div class="product-grid">
+        
+        <!-- Tambahkan id agar tombol CTA bisa scroll ke sini -->
+        <div id="product-list" class="product-grid">
           <ProductCard
             v-for="product in filteredProducts"
             :key="product.id"
@@ -192,6 +198,7 @@ export default {
             @view-details="viewProductDetails"
           />
         </div>
+        
         <div v-if="filteredProducts.length === 0" class="no-results">
           <h3>Oops! Produk tidak ditemukan.</h3>
           <p>Coba gunakan kata kunci lain untuk mencari produk yang Anda inginkan.</p>
@@ -220,7 +227,6 @@ export default {
       @clear-cart="handleClearCart"
       @close-cart="toggleCart"
     />
-    <!-- 7. Tambahkan komponen MobileNav di sini -->
     <MobileNav 
       :isOpen="isMobileNavOpen"
       :activeView="currentView"
@@ -242,7 +248,67 @@ export default {
 </template>
 
 <style>
-/* (Style tidak berubah, biarkan seperti semula) */
+/* ... (style global lainnya tidak berubah) ... */
+
+/* TAMBAHKAN STYLE BARU INI KE BAGIAN BAWAH */
+.hero-section {
+  position: relative;
+  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://cdn.mos.cms.futurecdn.net/v2/t:65,l:0,cw:1254,ch:705,q:80,w:1254/YT9HWuDKPjSEJdHMYnYR8K.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  text-align: center;
+  padding: 6rem 2rem;
+  border-radius: 12px;
+  margin-bottom: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-content h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+}
+
+.hero-content p {
+  font-size: 1.25rem;
+  max-width: 600px;
+  margin: 0 auto 2rem auto;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
+}
+
+.cta-button {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: transform 0.2s, background-color 0.2s;
+  display: inline-block;
+}
+
+.cta-button:hover {
+  background-color: var(--secondary-color);
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 4rem 1.5rem;
+  }
+  .hero-content h1 {
+    font-size: 2.2rem;
+  }
+  .hero-content p {
+    font-size: 1.1rem;
+  }
+}
+
 .no-scroll { overflow: hidden; }
 #app-wrapper { transition: none; }
 .cart-overlay {

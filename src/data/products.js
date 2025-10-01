@@ -70,6 +70,25 @@ export default [
     "description": "Varian dengan warna hitam pekat dan kandungan antioksidan tinggi.",
     "image": "https://ik.imagekit.io/notargazyu/Anggur/anggur.jpg",
     "bestSeller": false
-  }
+  },
+  {
+  "id": 120,
+  "name": "Mangga",
+  "price": 99999,
+  "stock": 999,
+  "description": "mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga",
+  "longDescription": "mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga, mangga",
+  "specs": {
+    "height": "15",
+    "age": "1",
+    "climate": "jauh"
+  },
+  "category": "jauh",
+  "image": "https://ik.imagekit.io/notargazyu/Anggur/anggur.jpg",
+  "bestSeller": true,
+  "tags": [
+    "jauh"
+  ]
+},
 ];
 

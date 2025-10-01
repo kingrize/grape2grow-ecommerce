@@ -35,7 +35,6 @@ export default {
     toggleCart() {
       this.$emit('toggle-cart');
     },
-    // Emit event baru untuk membuka menu mobile
     toggleMobileNav() {
       this.$emit('toggle-mobile-nav');
     }
@@ -47,10 +46,13 @@ export default {
   <header class="header">
     <div class="container">
       <div class="logo" @click="navigate('home')">
-        🍇 Grape2Grow
+        <!-- MENGGANTI EMOJI DENGAN SVG -->
+        <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19.5 10c-2.485 0-4.5 2.015-4.5 4.5s2.015 4.5 4.5 4.5S24 16.985 24 14.5 21.985 10 19.5 10zM4.5 10C2.015 10 0 12.015 0 14.5S2.015 19 4.5 19 9 16.985 9 14.5 6.985 10 4.5 10zM12 1c-2.485 0-4.5 2.015-4.5 4.5S9.515 10 12 10s4.5-2.015 4.5-4.5S14.485 1 12 1z"/>
+        </svg>
+        <span>Grape2Grow</span>
       </div>
       
-      <!-- Navigasi Desktop (sembunyi di mobile) -->
       <nav class="navbar desktop-nav">
         <a href="#" @click.prevent="navigate('home')" :class="{ active: activeView === 'home' }">Beranda</a>
         <a href="#" @click.prevent="navigate('about')" :class="{ active: activeView === 'about' }">Tentang Kami</a>
@@ -63,7 +65,6 @@ export default {
           <span v-if="cartItemCount > 0" class="cart-badge">{{ cartItemCount }}</span>
         </button>
 
-        <!-- Tombol Hamburger (hanya tampil di mobile) -->
         <button @click="toggleMobileNav" class="mobile-nav-toggle" aria-label="Buka Menu">
           <vue-feather type="menu"></vue-feather>
         </button>
@@ -97,6 +98,14 @@ export default {
   font-weight: 700;
   color: var(--secondary-color);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--primary-color);
 }
 .desktop-nav {
   display: flex;
@@ -168,9 +177,8 @@ export default {
   40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
-/* Tombol Hamburger */
 .mobile-nav-toggle {
-  display: none; /* Sembunyikan di desktop */
+  display: none;
   background: none;
   border: none;
   cursor: pointer;
@@ -178,13 +186,12 @@ export default {
   color: #333;
 }
 
-/* Tampilan Mobile */
 @media (max-width: 768px) {
   .desktop-nav {
-    display: none; /* Sembunyikan navigasi desktop */
+    display: none;
   }
   .mobile-nav-toggle {
-    display: block; /* Tampilkan tombol hamburger */
+    display: block;
   }
   .container {
     padding: 0 1rem;
