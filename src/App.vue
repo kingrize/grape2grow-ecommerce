@@ -6,23 +6,30 @@ import ProductCard from './components/ProductCard.vue';
 import Footer from './components/Footer.vue';
 import ShoppingCart from './components/ShoppingCart.vue';
 import DeveloperTool from './components/DeveloperTool.vue';
+// 1. Impor komponen detail
+import ProductDetail from './components/ProductDetail.vue';
 
 export default {
   name: 'App',
+  // 2. Daftarkan komponen detail
   components: {
     Header,
     ProductCard,
     Footer,
     ShoppingCart,
-    DeveloperTool
+    DeveloperTool,
+    ProductDetail
   },
   data() {
     return {
       products: productsData,
-      cart: [], // 1. Mulai dengan keranjang kosong, akan diisi dari localStorage
+      cart: [],
       isCartOpen: false,
       cartAnimationTrigger: 0,
-      showDevTools: false
+      showDevTools: false,
+      // 3. State baru untuk routing
+      currentView: 'list', // 'list' atau 'detail'
+      selectedProduct: null // Untuk menyimpan produk yang sedang dilihat
     };
   },
   computed: {
@@ -30,17 +37,13 @@ export default {
       return this.cart.reduce((total, item) => total + item.quantity, 0);
     }
   },
-  // 2. Gunakan 'created' lifecycle hook untuk memuat data saat aplikasi dimulai
   created() {
-    // Muat keranjang dari localStorage
     const savedCart = localStorage.getItem('grape2grow_cart');
     if (savedCart) {
       try {
-        // Coba parse data JSON
         this.cart = JSON.parse(savedCart);
       } catch (e) {
         console.error("Gagal memuat keranjang dari localStorage:", e);
-        // Hapus data yang rusak agar tidak menyebabkan error lagi
         localStorage.removeItem('grape2grow_cart');
       }
     }
@@ -53,14 +56,11 @@ export default {
         document.body.classList.remove('no-scroll');
       }
     },
-    // 3. Tambahkan 'watcher' untuk memantau perubahan pada keranjang
     cart: {
-      // Fungsi 'handler' akan berjalan setiap kali 'cart' berubah
       handler(newCart) {
-        // Simpan versi terbaru dari keranjang ke localStorage
         localStorage.setItem('grape2grow_cart', JSON.stringify(newCart));
       },
-      deep: true // 'deep' penting agar perubahan di dalam objek (cth: kuantitas) juga terdeteksi
+      deep: true
     }
   },
   mounted() {
@@ -70,6 +70,17 @@ export default {
     }
   },
   methods: {
+    // 4. Method baru untuk menampilkan detail produk
+    viewProductDetails(product) {
+      this.selectedProduct = product;
+      this.currentView = 'detail';
+      window.scrollTo(0, 0); // Scroll ke atas halaman
+    },
+    // 5. Method untuk kembali ke daftar produk
+    backToList() {
+      this.selectedProduct = null;
+      this.currentView = 'list';
+    },
     handleAddToCart(product) {
       const existingItem = this.cart.find(item => item.id === product.id);
       if (existingItem) {
@@ -108,19 +119,30 @@ export default {
       @toggle-cart="toggleCart"
     />
     <main class="container">
-      <h2 class="section-title">Produk Bibit Anggur Pilihan</h2>
-      <p class="section-subtitle">Kualitas terbaik untuk kebun Anda. Tambahkan ke keranjang sekarang!</p>
+      <!-- 6. Gunakan v-if dan v-else untuk beralih tampilan -->
+      <div v-if="currentView === 'list'">
+        <h2 class="section-title">Produk Bibit Anggur Pilihan</h2>
+        <p class="section-subtitle">Kualitas terbaik untuk kebun Anda. Tambahkan ke keranjang sekarang!</p>
+        <DeveloperTool v-if="showDevTools" />
+        <div class="product-grid">
+          <ProductCard
+            v-for="product in products"
+            :key="product.id"
+            :product="product"
+            @add-to-cart="handleAddToCart"
+            @view-details="viewProductDetails"
+          />
+        </div>
+      </div>
       
-      <DeveloperTool v-if="showDevTools" />
-      
-      <div class="product-grid">
-        <ProductCard
-          v-for="product in products"
-          :key="product.id"
-          :product="product"
+      <div v-else-if="currentView === 'detail' && selectedProduct">
+        <ProductDetail 
+          :product="selectedProduct"
+          @back-to-list="backToList"
           @add-to-cart="handleAddToCart"
         />
       </div>
+
     </main>
     <Footer />
     <ShoppingCart 
@@ -136,6 +158,7 @@ export default {
 </template>
 
 <style>
+/* (Tidak ada perubahan di style, biarkan seperti semula) */
 .no-scroll {
   overflow: hidden;
 }

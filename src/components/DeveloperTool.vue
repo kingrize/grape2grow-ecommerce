@@ -15,17 +15,34 @@ export default {
         price: 0,
         stock: 10,
         description: '',
+        // Kolom baru untuk data yang lebih detail
+        longDescription: '',
+        specs: {
+            height: '',
+            age: '',
+            climate: ''
+        },
+        category: '',
         image: 'https://ik.imagekit.io/notargazyu/Anggur/anggur.jpg',
-        bestSeller: false
+        bestSeller: false,
       },
+      tagsString: '', // Input terpisah untuk tags agar mudah diolah
       copySuccess: false,
-      // State baru untuk mengontrol tab yang aktif di mobile
-      activeTab: 'form'
+      isCodeVisible: false
     };
   },
   computed: {
     generatedCode() {
-      const jsonString = JSON.stringify(this.product, null, 2);
+      // Buat salinan objek produk untuk dimanipulasi
+      const productToGenerate = { ...this.product };
+
+      // Olah string tags menjadi array
+      productToGenerate.tags = this.tagsString
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag !== '');
+
+      const jsonString = JSON.stringify(productToGenerate, null, 2);
       return `${jsonString},`;
     }
   },
@@ -50,25 +67,12 @@ export default {
 <template>
   <div class="dev-tool-wrapper">
     <div class="dev-tool-header">
-      <vue-feather type="code" class="header-icon"></vue-feather>
-      <h3>Developer Tool: Product Code Generator</h3>
-    </div>
-
-    <!-- Navigasi Tab (HANYA TAMPIL DI MOBILE & TABLET) -->
-    <div class="dev-tool-tabs">
-      <button :class="{ active: activeTab === 'form' }" @click="activeTab = 'form'">
-        <vue-feather type="edit-3" size="16"></vue-feather>
-        <span>Form Input</span>
-      </button>
-      <button :class="{ active: activeTab === 'code' }" @click="activeTab = 'code'">
-        <vue-feather type="code" size="16"></vue-feather>
-        <span>Generated Code</span>
-      </button>
+      <vue-feather type="tool" class="header-icon"></vue-feather>
+      <h3>Developer Tool</h3>
     </div>
 
     <div class="dev-tool-body">
-      <!-- Di mobile, v-show akan bekerja. Di desktop, CSS akan memaksa keduanya terlihat -->
-      <div class="form-section" v-show="activeTab === 'form'">
+      <div class="form-section">
         <div class="form-group">
           <label for="name">Nama Produk</label>
           <input type="text" id="name" v-model="product.name" placeholder="cth: Bibit Anggur Jupiter">
@@ -85,9 +89,42 @@ export default {
         </div>
         <div class="form-group">
           <label for="description">Deskripsi Singkat</label>
-          <textarea id="description" v-model="product.description" rows="3" placeholder="cth: Varian impor dengan rasa manis dan adaptif."></textarea>
+          <textarea id="description" v-model="product.description" rows="2" placeholder="Teks singkat untuk di kartu produk."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="longDescription">Deskripsi Lengkap</label>
+          <textarea id="longDescription" v-model="product.longDescription" rows="4" placeholder="Deskripsi detail untuk halaman produk."></textarea>
         </div>
         
+        <fieldset class="specs-group">
+          <legend>Spesifikasi</legend>
+          <div class="form-group-row">
+            <div class="form-group">
+              <label for="spec-height">Tinggi Bibit (cm)</label>
+              <input type="text" id="spec-height" v-model="product.specs.height" placeholder="cth: 30-50">
+            </div>
+            <div class="form-group">
+              <label for="spec-age">Usia Bibit (bulan)</label>
+              <input type="text" id="spec-age" v-model="product.specs.age" placeholder="cth: 3-4">
+            </div>
+          </div>
+           <div class="form-group">
+              <label for="spec-climate">Iklim Tumbuh</label>
+              <input type="text" id="spec-climate" v-model="product.specs.climate" placeholder="cth: Dataran rendah - tinggi">
+            </div>
+        </fieldset>
+
+        <div class="form-group-row">
+          <div class="form-group">
+            <label for="category">Kategori</label>
+            <input type="text" id="category" v-model="product.category" placeholder="cth: Anggur Meja">
+          </div>
+          <div class="form-group">
+            <label for="tags">Tags / Kata Kunci</label>
+            <input type="text" id="tags" v-model="tagsString" placeholder="impor, manis, tanpa biji">
+          </div>
+        </div>
+
         <div class="form-group">
           <label for="image">URL Gambar</label>
           <input type="text" id="image" v-model="product.image" placeholder="https://contoh.com/gambar.jpg">
@@ -105,20 +142,30 @@ export default {
           </div>
         </div>
       </div>
-      <div class="code-section" v-show="activeTab === 'code'">
+
+      <!-- Tombol ini HANYA TAMPIL di mobile/tablet untuk membuka/tutup area kode -->
+      <button @click="isCodeVisible = !isCodeVisible" class="toggle-code-btn">
+        <span class="btn-content">
+          <vue-feather :type="isCodeVisible ? 'chevron-up' : 'chevron-down'" size="18"></vue-feather>
+          {{ isCodeVisible ? 'Sembunyikan Kode' : 'Tampilkan Generated Code' }}
+        </span>
+      </button>
+
+      <!-- Area kode ini akan expand/collapse di mobile, dan selalu tampil di desktop -->
+      <div class="code-section" :class="{ 'is-visible': isCodeVisible }">
         <h4>Generated Code:</h4>
         <div class="code-container">
           <pre><code>{{ generatedCode }}</code></pre>
           <button @click="copyCode" class="copy-btn">
             <span v-if="!copySuccess" class="copy-btn-content">
-              <vue-feather type="copy" size="16"></vue-feather> Salin Kode
+              <vue-feather type="copy" size="16"></vue-feather> Salin
             </span>
             <span v-else class="copy-btn-content">
               <vue-feather type="check" size="16"></vue-feather> Berhasil!
             </span>
           </button>
         </div>
-        <p class="instruction">Salin kode di atas dan tempelkan ke dalam array di file `src/data/products.js`.</p>
+        <p class="instruction">Salin dan tempel kode ini ke dalam file `src/data/products.js`.</p>
       </div>
     </div>
   </div>
@@ -143,14 +190,13 @@ export default {
 }
 .dev-tool-header .header-icon {
   color: #63b3ed;
-  flex-shrink: 0;
 }
 .dev-tool-header h3 {
   margin: 0;
   font-size: 1.2rem;
-  line-height: 1.4;
 }
 
+/* Default: 2 kolom untuk layar lebar */
 .dev-tool-body {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -205,21 +251,39 @@ export default {
   border-radius: 6px;
   cursor: pointer;
 }
+.specs-group {
+  border: 1px solid #4a5568;
+  padding: 1rem;
+  padding-top: 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+.specs-group legend {
+  padding: 0 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
 .code-container {
   position: relative;
   background-color: #1a202c;
   border-radius: 6px;
   border: 1px solid #4a5568;
   min-height: 250px;
+  display: flex;
+  flex-direction: column;
 }
 pre {
   padding: 1rem;
   padding-top: 3.5rem;
-  /* PERBAIKAN UTAMA: Memastikan teks selalu wrap */
-  white-space: pre-wrap;       /* Melipat baris secara otomatis */
-  overflow-wrap: break-word; /* Memaksa pematahan kata yang sangat panjang */
   font-family: 'Courier New', Courier, monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  flex-grow: 1;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
+
 .copy-btn {
   position: absolute;
   top: 10px;
@@ -242,61 +306,65 @@ pre {
   font-size: 0.9rem;
   color: #a0aec0;
 }
-
-.dev-tool-tabs {
-  display: none;
+.toggle-code-btn {
+  display: none; /* Sembunyikan tombol ini di desktop */
 }
 
 @media (max-width: 1023px) {
-  .dev-tool-header h3 {
-    font-size: 1.1rem;
-  }
-  .dev-tool-tabs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    background-color: #1a202c;
-  }
-  .dev-tool-tabs button {
-    background: none;
-    border: none;
-    color: #a0aec0;
-    padding: 1rem;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    border-bottom: 3px solid transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s ease-in-out;
-  }
-  .dev-tool-tabs button.active {
-    color: #63b3ed;
-    border-bottom-color: #63b3ed;
-    background-color: #2d3748;
-  }
   .dev-tool-body {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Tampilan satu kolom */
     padding: 1.5rem;
   }
-}
-
-@media (min-width: 1024px) {
-  .form-section, .code-section {
-    display: block !important;
+  .toggle-code-btn {
+    display: flex; /* Tampilkan tombol di mobile */
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 0.8rem;
+    margin-top: 1rem;
+    border: 1px solid #4a5568;
+    background-color: #1a202c;
+    color: #a0aec0;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .toggle-code-btn:hover {
+    background-color: #2d3748;
+  }
+  .btn-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .code-section {
+    display: none;
+    margin-top: 1.5rem;
+  }
+  .code-section.is-visible {
+    display: block;
+  }
+  
+  @media (min-width: 1024px) {
+    .code-section {
+      display: block !important;
+      margin-top: 0;
+    }
   }
 }
 
 @media (max-width: 576px) {
-  .dev-tool-header {
-    padding: 1rem;
-  }
   .dev-tool-body {
     padding: 1rem;
   }
   .form-group-row {
     grid-template-columns: 1fr;
+  }
+  pre {
+    padding: 0.75rem;
+    padding-top: 3.5rem;
   }
 }
 </style>

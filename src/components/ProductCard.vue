@@ -1,11 +1,9 @@
 <!-- src/components/ProductCard.vue -->
 <script>
-// Impor satu komponen generik dari vue-feather
 import VueFeather from 'vue-feather';
 
 export default {
   name: 'ProductCard',
-  // Daftarkan komponen VueFeather agar bisa digunakan di template
   components: {
     VueFeather
   },
@@ -19,24 +17,26 @@ export default {
     addToCart() {
       if (this.product.stock === 0) return;
       this.$emit('add-to-cart', this.product);
+    },
+    // Method baru untuk mengirim sinyal lihat detail
+    viewDetails() {
+      this.$emit('view-details', this.product);
     }
   }
 }
 </script>
 
 <template>
-  <div class="product-card" :class="{ 'out-of-stock': product.stock === 0 }">
+  <!-- Menambahkan event click di wrapper utama -->
+  <div class="product-card" :class="{ 'out-of-stock': product.stock === 0 }" @click="viewDetails">
     <div class="product-image-container">
-      <!-- Label Best Seller menggunakan komponen VueFeather -->
       <div v-if="product.bestSeller" class="bestseller-label">
         <vue-feather type="star" class="bestseller-icon"></vue-feather>
         <span>Terlaris</span>
       </div>
-      
       <div v-if="product.stock === 0" class="sold-out-overlay">
         <span>Habis Terjual</span>
       </div>
-      
       <img :src="product.image" :alt="product.name" class="product-image">
     </div>
     <div class="product-info">
@@ -44,13 +44,13 @@ export default {
       <p class="product-description">{{ product.description }}</p>
       <p class="product-price">Rp {{ product.price.toLocaleString('id-ID') }}</p>
       
+      <!-- Hentikan event click agar tidak bubble up ke parent saat tombol ini diklik -->
       <button 
-        @click="addToCart" 
+        @click.stop="addToCart" 
         class="buy-btn"
         :disabled="product.stock === 0"
         :class="{ 'disabled': product.stock === 0 }">
         <span v-if="product.stock > 0" class="btn-content">
-          <!-- Ikon Plus menggunakan komponen VueFeather -->
           <vue-feather type="plus" class="btn-icon"></vue-feather>
           Tambah ke Keranjang
         </span>
@@ -64,6 +64,11 @@ export default {
 
 <style scoped>
 /* src/components/ProductCard.vue */
+.product-card {
+  /* ... (semua style lain tetap sama) ... */
+  cursor: pointer; /* Tambahkan ini untuk menandakan bisa diklik */
+}
+/* ... (sisa style tidak berubah, biarkan seperti semula) ... */
 .product-card {
   background-color: var(--card-bg);
   border-radius: 12px;
@@ -132,25 +137,20 @@ export default {
   transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s;
   width: 100%;
 }
-
-/* Menggunakan .btn-content untuk menata ikon dan teks di dalam tombol */
 .btn-content {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 8px;
 }
-
 .buy-btn:hover:not(:disabled) {
   transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
 }
-
 .buy-btn.disabled {
   background: #ccc;
   cursor: not-allowed;
 }
-
 .bestseller-label {
   position: absolute;
   top: 10px;
@@ -168,19 +168,15 @@ export default {
   gap: 5px;
   border: 1px solid #ffc107;
 }
-
-/* Style untuk ikon */
 .bestseller-icon {
   width: 16px;
   height: 16px;
-  color: #e6a200; /* Feather icons menggunakan 'color' untuk stroke */
+  color: #e6a200;
 }
-
 .btn-icon {
   width: 18px;
   height: 18px;
 }
-
 .sold-out-overlay {
   position: absolute;
   top: 0;
