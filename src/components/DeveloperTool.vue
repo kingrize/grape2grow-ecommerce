@@ -110,7 +110,6 @@ export default {
         <div class="code-container">
           <pre><code>{{ generatedCode }}</code></pre>
           <button @click="copyCode" class="copy-btn">
-            <!-- PERBAIKAN DI SINI -->
             <span v-if="!copySuccess" class="copy-btn-content">
               <vue-feather type="copy" size="16"></vue-feather> Salin Kode
             </span>
@@ -133,7 +132,7 @@ export default {
   border-radius: 12px;
   margin: 3rem 0;
   border: 1px solid #4a5568;
-  overflow: hidden; /* Mencegah konten keluar dari border-radius */
+  overflow: hidden;
 }
 .dev-tool-header {
   padding: 1rem 1.5rem;
@@ -144,13 +143,14 @@ export default {
 }
 .dev-tool-header .header-icon {
   color: #63b3ed;
+  flex-shrink: 0;
 }
 .dev-tool-header h3 {
   margin: 0;
   font-size: 1.2rem;
+  line-height: 1.4;
 }
 
-/* Default: 2 kolom untuk layar lebar */
 .dev-tool-body {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -210,13 +210,14 @@ export default {
   background-color: #1a202c;
   border-radius: 6px;
   border: 1px solid #4a5568;
-  height: 100%;
+  min-height: 250px;
 }
 pre {
   padding: 1rem;
   padding-top: 3.5rem;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+  /* PERBAIKAN UTAMA: Memastikan teks selalu wrap */
+  white-space: pre-wrap;       /* Melipat baris secara otomatis */
+  overflow-wrap: break-word; /* Memaksa pematahan kata yang sangat panjang */
   font-family: 'Courier New', Courier, monospace;
 }
 .copy-btn {
@@ -229,6 +230,7 @@ pre {
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
   cursor: pointer;
+  z-index: 2;
 }
 .copy-btn-content {
   display: flex;
@@ -241,14 +243,14 @@ pre {
   color: #a0aec0;
 }
 
-/* --- ROMBAKAN TOTAL UNTUK RESPONSIVE --- */
-
 .dev-tool-tabs {
-  display: none; /* Sembunyikan di desktop secara default */
+  display: none;
 }
 
-/* Tampilan Tablet & Mobile (di bawah 1024px) */
 @media (max-width: 1023px) {
+  .dev-tool-header h3 {
+    font-size: 1.1rem;
+  }
   .dev-tool-tabs {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -274,23 +276,22 @@ pre {
     border-bottom-color: #63b3ed;
     background-color: #2d3748;
   }
-
   .dev-tool-body {
-    grid-template-columns: 1fr; /* Ubah ke satu kolom */
+    grid-template-columns: 1fr;
     padding: 1.5rem;
   }
 }
 
-/* Tampilan Desktop (di atas 1024px) */
 @media (min-width: 1024px) {
-  /* Di desktop, paksa kedua section untuk tampil dan abaikan v-show */
   .form-section, .code-section {
     display: block !important;
   }
 }
 
-/* Tambahan untuk layar ponsel yang sangat kecil */
 @media (max-width: 576px) {
+  .dev-tool-header {
+    padding: 1rem;
+  }
   .dev-tool-body {
     padding: 1rem;
   }
