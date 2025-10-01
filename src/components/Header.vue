@@ -12,32 +12,28 @@ export default {
       type: Number,
       default: 0
     },
-    // Prop baru untuk menerima pemicu animasi
-    trigger: {
-      type: Number,
-      default: 0
-    }
+    trigger: Number,
+    activeView: String // Menerima info halaman yang aktif
   },
   data() {
     return {
-      // State lokal untuk mengontrol kelas animasi
-      isAnimating: false
+      isShaking: false
     }
   },
   watch: {
-    // Menonton perubahan pada 'trigger'
     trigger() {
-      // Jika trigger berubah, mulai animasi
-      this.isAnimating = true;
-
-      // Hapus kelas animasi setelah selesai agar bisa dipicu lagi
+      this.isShaking = true;
       setTimeout(() => {
-        this.isAnimating = false;
-      }, 600); // Durasi harus sama dengan durasi animasi di CSS
+        this.isShaking = false;
+      }, 600);
     }
   },
   methods: {
-    handleToggleCart() {
+    // Mengirim sinyal navigasi ke App.vue
+    navigate(view) {
+      this.$emit('navigate', view);
+    },
+    toggleCart() {
       this.$emit('toggle-cart');
     }
   }
@@ -46,22 +42,19 @@ export default {
 
 <template>
   <header class="header">
-    <div class="container header-container">
-      <div class="logo">
-        🌿 Grape2Grow
+    <div class="container">
+      <!-- Logo sekarang juga berfungsi sebagai tombol home -->
+      <div class="logo" @click="navigate('home')">
+        🍇 Grape2Grow
       </div>
       <nav class="navbar">
-        <a href="#" class="active">Beranda</a>
-        <a href="#">Produk</a>
-        <a href="#">Kontak</a>
+        <!-- Menggunakan class 'active' berdasarkan prop -->
+        <a href="#" @click.prevent="navigate('home')" :class="{ active: activeView === 'home' }">Beranda</a>
+        <a href="#" @click.prevent="navigate('about')" :class="{ active: activeView === 'about' }">Tentang Kami</a>
+        <a href="#" @click.prevent="navigate('contact')" :class="{ active: activeView === 'contact' }">Kontak</a>
       </nav>
       <div class="header-actions">
-        <!-- Menambahkan class 'shake' secara dinamis -->
-        <button 
-          @click="handleToggleCart" 
-          class="cart-button" 
-          :class="{ 'shake': isAnimating }"
-          aria-label="Buka Keranjang">
+        <button @click="toggleCart" class="cart-button" :class="{ shake: isShaking }" aria-label="Buka Keranjang">
           <vue-feather type="shopping-cart"></vue-feather>
           <span v-if="cartItemCount > 0" class="cart-badge">{{ cartItemCount }}</span>
         </button>
@@ -76,6 +69,7 @@ export default {
   background-color: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  color: #333;
   padding: 1rem 0;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   position: sticky;
@@ -83,19 +77,21 @@ export default {
   z-index: 100;
   width: 100%;
 }
-.header-container {
+.container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0 2rem;
 }
 .logo {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--secondary-color);
+  cursor: pointer; /* Menandakan bisa diklik */
 }
 .navbar {
   display: flex;
-  gap: 1rem;
+  gap: 2rem;
 }
 .navbar a {
   color: #333;
@@ -103,7 +99,7 @@ export default {
   font-weight: 600;
   transition: color 0.3s ease;
   position: relative;
-  padding: 0.5rem;
+  padding-bottom: 5px;
 }
 .navbar a:after {
   content: '';
@@ -124,71 +120,46 @@ export default {
 .navbar a:hover, .navbar a.active {
   color: var(--primary-color);
 }
-
 .header-actions {
   position: relative;
 }
-
 .cart-button {
   background: none;
   border: none;
   cursor: pointer;
   position: relative;
-  padding: 8px;
+  padding: 5px;
   color: #333;
-  transition: color 0.3s ease;
 }
-
-.cart-button:hover {
-  color: var(--primary-color);
-}
-
 .cart-badge {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: -5px;
+  right: -8px;
   background-color: #e63946;
   color: white;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: bold;
-  transform: scale(1);
-  transition: transform 0.2s;
+  border: 2px solid white;
 }
-
-/* --- ANIMASI BARU --- */
-.cart-button.shake {
+.shake {
   animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
 }
-.cart-button.shake .cart-badge {
-  transform: scale(1.3);
-}
-
 @keyframes shake {
-  10%, 90% {
-    transform: translate3d(-1px, 0, 0);
-  }
-  20%, 80% {
-    transform: translate3d(2px, 0, 0);
-  }
-  30%, 50%, 70% {
-    transform: translate3d(-4px, 0, 0);
-  }
-  40%, 60% {
-    transform: translate3d(4px, 0, 0);
-  }
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
 }
-/* --- AKHIR ANIMASI BARU --- */
-
 
 @media (max-width: 768px) {
   .navbar {
-    display: none;
+    display: none; /* Sembunyikan navbar di mobile untuk versi simpel */
   }
 }
 </style>

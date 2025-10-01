@@ -8,10 +8,8 @@ export default {
     VueFeather
   },
   props: {
-    // Gunakan modelValue agar kita bisa memakai v-model di App.vue
     modelValue: String
   },
-  // Definisikan event yang akan di-emit
   emits: ['update:modelValue']
 }
 </script>
@@ -33,7 +31,7 @@ export default {
 /* src/components/SearchBar.vue */
 .search-wrapper {
   position: relative;
-  margin-bottom: 2.5rem;
+  height: 100%; /* PERBAIKAN: Agar wrapper meregang */
 }
 
 .search-icon {
@@ -42,12 +40,14 @@ export default {
   left: 1rem;
   transform: translateY(-50%);
   color: #aaa;
-  pointer-events: none; /* Agar ikon tidak bisa diklik */
+  pointer-events: none;
 }
 
 .search-input {
   width: 100%;
-  padding: 1rem 1rem 1rem 3rem; /* Padding kiri untuk memberi ruang bagi ikon */
+  height: 100%; /* PERBAIKAN: Agar input meregang */
+  box-sizing: border-box; /* Pastikan padding tidak menambah tinggi */
+  padding: 1rem 1rem 1rem 3rem;
   font-size: 1rem;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -60,3 +60,4 @@ export default {
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
 }
 </style>
+
