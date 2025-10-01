@@ -19,7 +19,7 @@ export default {
   data() {
     return {
       products: productsData,
-      cart: [],
+      cart: [], // 1. Mulai dengan keranjang kosong, akan diisi dari localStorage
       isCartOpen: false,
       cartAnimationTrigger: 0,
       showDevTools: false
@@ -30,10 +30,19 @@ export default {
       return this.cart.reduce((total, item) => total + item.quantity, 0);
     }
   },
-  mounted() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('dev') === 'true') {
-      this.showDevTools = true;
+  // 2. Gunakan 'created' lifecycle hook untuk memuat data saat aplikasi dimulai
+  created() {
+    // Muat keranjang dari localStorage
+    const savedCart = localStorage.getItem('grape2grow_cart');
+    if (savedCart) {
+      try {
+        // Coba parse data JSON
+        this.cart = JSON.parse(savedCart);
+      } catch (e) {
+        console.error("Gagal memuat keranjang dari localStorage:", e);
+        // Hapus data yang rusak agar tidak menyebabkan error lagi
+        localStorage.removeItem('grape2grow_cart');
+      }
     }
   },
   watch: {
@@ -43,6 +52,21 @@ export default {
       } else {
         document.body.classList.remove('no-scroll');
       }
+    },
+    // 3. Tambahkan 'watcher' untuk memantau perubahan pada keranjang
+    cart: {
+      // Fungsi 'handler' akan berjalan setiap kali 'cart' berubah
+      handler(newCart) {
+        // Simpan versi terbaru dari keranjang ke localStorage
+        localStorage.setItem('grape2grow_cart', JSON.stringify(newCart));
+      },
+      deep: true // 'deep' penting agar perubahan di dalam objek (cth: kuantitas) juga terdeteksi
+    }
+  },
+  mounted() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('dev') === 'true') {
+      this.showDevTools = true;
     }
   },
   methods: {
@@ -66,7 +90,6 @@ export default {
     handleRemoveItem(product) {
       this.cart = this.cart.filter(item => item.id !== product.id);
     },
-    // Method baru untuk mengosongkan keranjang
     handleClearCart() {
       this.cart = [];
     },
