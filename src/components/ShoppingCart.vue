@@ -7,6 +7,12 @@ export default {
   components: {
     VueFeather
   },
+  // 1. Tambahkan state baru untuk mengontrol visibilitas modal
+  data() {
+    return {
+      showClearCartConfirm: false
+    }
+  },
   props: {
     cartItems: {
       type: Array,
@@ -27,11 +33,21 @@ export default {
       }
     },
     handleCloseCart() {
+      this.showClearCartConfirm = false; // Pastikan modal tertutup jika keranjang ditutup
       this.$emit('close-cart');
     },
-    // Method baru untuk mengirim sinyal hapus semua
-    handleClearCart() {
+    // 2. Method ini sekarang hanya akan menampilkan modal
+    requestClearCart() {
+      this.showClearCartConfirm = true;
+    },
+    // 3. Method baru untuk benar-benar menghapus setelah konfirmasi
+    confirmClearCart() {
       this.$emit('clear-cart');
+      this.showClearCartConfirm = false;
+    },
+    // 4. Method untuk membatalkan
+    cancelClearCart() {
+      this.showClearCartConfirm = false;
     },
     checkout() {
       if (this.cartItems.length === 0) return;
@@ -58,9 +74,9 @@ export default {
         <vue-feather type="shopping-cart"></vue-feather>
         Keranjang Saya
       </h3>
-      <!-- Tombol Hapus Semua -->
-      <button v-if="cartItems.length > 0" @click="handleClearCart" class="clear-cart-btn">
-        Hapus Semua
+      <!-- 5. Ubah event @click ke method baru -->
+      <button v-if="cartItems.length > 0" @click="requestClearCart" class="clear-cart-btn" title="Hapus Semua Keranjang">
+        <vue-feather type="trash-2" size="20"></vue-feather>
       </button>
       <button @click="handleCloseCart" class="close-btn" aria-label="Tutup Keranjang">
         <vue-feather type="x"></vue-feather>
@@ -68,6 +84,7 @@ export default {
     </div>
     
     <div class="cart-body">
+      <!-- ... (Konten cart-body tidak berubah) ... -->
       <div v-if="cartItems.length === 0" class="cart-empty">
         <vue-feather type="slash" size="48" class="empty-icon"></vue-feather>
         <p>Keranjang Anda masih kosong.</p>
@@ -90,6 +107,7 @@ export default {
     </div>
     
     <div v-if="cartItems.length > 0" class="cart-footer">
+      <!-- ... (Konten cart-footer tidak berubah) ... -->
       <div class="total">
         <span>Total Harga</span>
         <span>Rp {{ totalPrice.toLocaleString('id-ID') }}</span>
@@ -99,16 +117,32 @@ export default {
         Lanjut ke WhatsApp
       </button>
     </div>
+
+    <!-- 6. Tambahkan struktur HTML untuk Modal Konfirmasi -->
+    <transition name="modal-fade">
+      <div v-if="showClearCartConfirm" class="confirm-overlay">
+        <div class="confirm-box">
+          <h4>Konfirmasi</h4>
+          <p>Anda yakin ingin menghapus semua item dari keranjang?</p>
+          <div class="confirm-actions">
+            <button @click="cancelClearCart" class="btn-cancel">Batal</button>
+            <button @click="confirmClearCart" class="btn-confirm">Ya, Hapus</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
   </div>
 </template>
 
 <style scoped>
+/* ... (SEMUA STYLE SEBELUMNYA TETAP SAMA) ... */
 /* src/components/ShoppingCart.vue */
 .cart-panel {
   position: fixed;
   top: 0;
   right: 0;
-  height: 100%; /* Menggunakan 100% untuk kompatibilitas mobile yang lebih baik */
+  height: 100%;
   width: 90vw;
   max-width: 380px;
   background-color: white;
@@ -137,7 +171,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-right: auto; /* Mendorong tombol lain ke kanan */
+  margin-right: auto;
 }
 .close-btn {
   background: none;
@@ -145,6 +179,7 @@ export default {
   cursor: pointer;
   padding: 5px;
   color: #888;
+  transition: color 0.2s;
 }
 .close-btn:hover {
   color: #333;
@@ -154,11 +189,16 @@ export default {
   background: none;
   border: none;
   color: #e63946;
-  font-size: 0.8rem;
-  font-weight: 600;
   cursor: pointer;
   padding: 5px;
   margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+.clear-cart-btn:hover {
+  color: #a11d27;
 }
 
 .cart-body {
@@ -172,7 +212,6 @@ export default {
   border-top: 1px solid #eee;
   background: #fdfdfd;
   flex-shrink: 0;
-  /* KUNCI PERBAIKAN: Menambahkan padding di bawah untuk memberi ruang dari navigasi browser */
   padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
 }
 
@@ -279,6 +318,69 @@ export default {
 }
 .btn-icon {
   width: 18px;
+}
+
+/* 7. Tambahkan CSS untuk Modal Konfirmasi */
+.confirm-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 20; /* Harus di atas konten keranjang */
+}
+.confirm-box {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  width: 90%;
+  max-width: 300px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.confirm-box h4 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+.confirm-box p {
+  margin-bottom: 1.5rem;
+  color: #666;
+}
+.confirm-actions {
+  display: flex;
+  gap: 1rem;
+}
+.confirm-actions button {
+  flex-grow: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.confirm-actions button:hover {
+  transform: scale(1.05);
+}
+.btn-cancel {
+  background-color: #eee;
+  color: #333;
+}
+.btn-confirm {
+  background-color: #e63946;
+  color: white;
+}
+
+/* Transisi untuk modal */
+.modal-fade-enter-active, .modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.modal-fade-enter-from, .modal-fade-leave-to {
+  opacity: 0;
 }
 </style>
 
