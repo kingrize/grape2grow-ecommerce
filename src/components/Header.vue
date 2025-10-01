@@ -13,7 +13,7 @@ export default {
       default: 0
     },
     trigger: Number,
-    activeView: String // Menerima info halaman yang aktif
+    activeView: String
   },
   data() {
     return {
@@ -29,12 +29,15 @@ export default {
     }
   },
   methods: {
-    // Mengirim sinyal navigasi ke App.vue
     navigate(view) {
       this.$emit('navigate', view);
     },
     toggleCart() {
       this.$emit('toggle-cart');
+    },
+    // Emit event baru untuk membuka menu mobile
+    toggleMobileNav() {
+      this.$emit('toggle-mobile-nav');
     }
   }
 }
@@ -43,20 +46,26 @@ export default {
 <template>
   <header class="header">
     <div class="container">
-      <!-- Logo sekarang juga berfungsi sebagai tombol home -->
       <div class="logo" @click="navigate('home')">
         🍇 Grape2Grow
       </div>
-      <nav class="navbar">
-        <!-- Menggunakan class 'active' berdasarkan prop -->
+      
+      <!-- Navigasi Desktop (sembunyi di mobile) -->
+      <nav class="navbar desktop-nav">
         <a href="#" @click.prevent="navigate('home')" :class="{ active: activeView === 'home' }">Beranda</a>
         <a href="#" @click.prevent="navigate('about')" :class="{ active: activeView === 'about' }">Tentang Kami</a>
         <a href="#" @click.prevent="navigate('contact')" :class="{ active: activeView === 'contact' }">Kontak</a>
       </nav>
+
       <div class="header-actions">
         <button @click="toggleCart" class="cart-button" :class="{ shake: isShaking }" aria-label="Buka Keranjang">
           <vue-feather type="shopping-cart"></vue-feather>
           <span v-if="cartItemCount > 0" class="cart-badge">{{ cartItemCount }}</span>
+        </button>
+
+        <!-- Tombol Hamburger (hanya tampil di mobile) -->
+        <button @click="toggleMobileNav" class="mobile-nav-toggle" aria-label="Buka Menu">
+          <vue-feather type="menu"></vue-feather>
         </button>
       </div>
     </div>
@@ -87,13 +96,13 @@ export default {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--secondary-color);
-  cursor: pointer; /* Menandakan bisa diklik */
+  cursor: pointer;
 }
-.navbar {
+.desktop-nav {
   display: flex;
   gap: 2rem;
 }
-.navbar a {
+.desktop-nav a {
   color: #333;
   text-decoration: none;
   font-weight: 600;
@@ -101,7 +110,7 @@ export default {
   position: relative;
   padding-bottom: 5px;
 }
-.navbar a:after {
+.desktop-nav a:after {
   content: '';
   position: absolute;
   width: 0;
@@ -112,16 +121,18 @@ export default {
   background: var(--primary-color);
   transition: width 0.3s ease;
 }
-.navbar a:hover:after, .navbar a.active:after {
+.desktop-nav a:hover:after, .desktop-nav a.active:after {
   width: 100%;
   left: 0;
   background: var(--primary-color);
 }
-.navbar a:hover, .navbar a.active {
+.desktop-nav a:hover, .desktop-nav a.active {
   color: var(--primary-color);
 }
 .header-actions {
-  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 .cart-button {
   background: none;
@@ -157,9 +168,26 @@ export default {
   40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
+/* Tombol Hamburger */
+.mobile-nav-toggle {
+  display: none; /* Sembunyikan di desktop */
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  color: #333;
+}
+
+/* Tampilan Mobile */
 @media (max-width: 768px) {
-  .navbar {
-    display: none; /* Sembunyikan navbar di mobile untuk versi simpel */
+  .desktop-nav {
+    display: none; /* Sembunyikan navigasi desktop */
+  }
+  .mobile-nav-toggle {
+    display: block; /* Tampilkan tombol hamburger */
+  }
+  .container {
+    padding: 0 1rem;
   }
 }
 </style>

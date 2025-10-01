@@ -10,14 +10,15 @@ import ProductDetail from './components/ProductDetail.vue';
 import SearchBar from './components/SearchBar.vue';
 import ToastNotification from './components/ToastNotification.vue';
 import FilterSort from './components/FilterSort.vue';
-// 1. Impor semua halaman baru
 import AboutPage from './components/AboutPage.vue';
 import ContactPage from './components/ContactPage.vue';
 import NotFoundPage from './components/NotFoundPage.vue';
+// 1. Impor komponen menu mobile
+import MobileNav from './components/MobileNav.vue';
 
 export default {
   name: 'App',
-  // 2. Daftarkan semua halaman
+  // 2. Daftarkan komponen
   components: {
     Header,
     ProductCard,
@@ -30,7 +31,8 @@ export default {
     FilterSort,
     AboutPage,
     ContactPage,
-    NotFoundPage
+    NotFoundPage,
+    MobileNav
   },
   data() {
     return {
@@ -39,12 +41,13 @@ export default {
       isCartOpen: false,
       cartAnimationTrigger: 0,
       showDevTools: false,
-      // 3. Ubah 'currentView' menjadi 'home'
-      currentView: 'home', // 'home', 'detail', 'about', 'contact', 'not-found'
+      currentView: 'home',
       selectedProduct: null,
       searchQuery: '',
       toasts: [],
-      sortBy: 'default'
+      sortBy: 'default',
+      // 3. State baru untuk menu mobile
+      isMobileNavOpen: false
     };
   },
   computed: {
@@ -52,6 +55,7 @@ export default {
       return this.cart.reduce((total, item) => total + item.quantity, 0);
     },
     filteredProducts() {
+      // ... (logika computed ini tidak berubah) ...
       let processedProducts = [...this.products];
       if (this.searchQuery) {
         const query = this.searchQuery.toLowerCase();
@@ -78,6 +82,10 @@ export default {
           break;
       }
       return processedProducts;
+    },
+    // 4. Computed property untuk mencegah scroll jika ada overlay
+    isOverlayActive() {
+      return this.isCartOpen || this.isMobileNavOpen;
     }
   },
   created() {
@@ -90,8 +98,9 @@ export default {
     }
   },
   watch: {
-    isCartOpen(newValue) {
-      document.body.classList.toggle('no-scroll', newValue);
+    // 5. Watcher yang lebih efisien
+    isOverlayActive(isActive) {
+      document.body.classList.toggle('no-scroll', isActive);
     },
     cart: {
       handler(newCart) {
@@ -105,10 +114,13 @@ export default {
     this.showDevTools = urlParams.get('dev') === 'true';
   },
   methods: {
-    // 4. Method baru untuk menangani semua navigasi
+    // 6. Method baru untuk toggle menu mobile
+    toggleMobileNav() {
+      this.isMobileNavOpen = !this.isMobileNavOpen;
+    },
     handleNavigate(view) {
       this.currentView = view;
-      window.scrollTo(0, 0); // Selalu scroll ke atas saat pindah halaman
+      window.scrollTo(0, 0);
     },
     viewProductDetails(product) {
       this.selectedProduct = product;
@@ -117,7 +129,7 @@ export default {
     },
     backToList() {
       this.selectedProduct = null;
-      this.currentView = 'home'; // Kembali ke 'home'
+      this.currentView = 'home';
     },
     handleAddToCart(product) {
       const existingItem = this.cart.find(item => item.id === product.id);
@@ -153,16 +165,16 @@ export default {
 
 <template>
   <div id="app-wrapper">
-    <!-- 5. Kirim 'currentView' sebagai prop dan dengarkan event 'navigate' -->
     <Header 
       :cartItemCount="totalCartItems"
       :trigger="cartAnimationTrigger"
       :activeView="currentView"
       @toggle-cart="toggleCart"
       @navigate="handleNavigate"
+      @toggle-mobile-nav="toggleMobileNav"
     />
     <main class="container">
-      <!-- 6. Perbarui logika v-if untuk menangani semua halaman -->
+      <!-- ... (Logika v-if tidak berubah) ... -->
       <div v-if="currentView === 'home'">
         <h2 class="section-title">Produk Bibit Anggur Pilihan</h2>
         <p class="section-subtitle">Kualitas terbaik untuk kebun Anda. Tambahkan ke keranjang sekarang!</p>
@@ -196,7 +208,6 @@ export default {
       <AboutPage v-else-if="currentView === 'about'" />
       <ContactPage v-else-if="currentView === 'contact'" />
 
-      <!-- Fallback ke halaman 404 jika view tidak cocok -->
       <NotFoundPage v-else @go-home="handleNavigate('home')" />
 
     </main>
@@ -209,6 +220,14 @@ export default {
       @clear-cart="handleClearCart"
       @close-cart="toggleCart"
     />
+    <!-- 7. Tambahkan komponen MobileNav di sini -->
+    <MobileNav 
+      :isOpen="isMobileNavOpen"
+      :activeView="currentView"
+      @navigate="handleNavigate"
+      @close-nav="isMobileNavOpen = false"
+    />
+
     <div v-if="isCartOpen" @click="toggleCart" class="cart-overlay"></div>
     <div class="toast-container">
       <ToastNotification 
@@ -223,6 +242,7 @@ export default {
 </template>
 
 <style>
+/* (Style tidak berubah, biarkan seperti semula) */
 .no-scroll { overflow: hidden; }
 #app-wrapper { transition: none; }
 .cart-overlay {
